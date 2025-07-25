@@ -601,13 +601,40 @@ function showStats() {
 }
 
 function backToMenu() {
+    console.log('🏠 Going back to main menu...');
     if (game) {
         game.gameStarted = false;
         if (game.gameLoop) {
             cancelAnimationFrame(game.gameLoop);
         }
         game.switchScreen('mainMenu');
+    } else {
+        // Force main menu even without game instance
+        document.querySelectorAll('.screen').forEach(screen => {
+            screen.classList.remove('active');
+        });
+        document.getElementById('mainMenu').classList.add('active');
     }
+    console.log('✅ Main menu active');
+}
+
+// Emergency function to force main menu
+function forceMainMenu() {
+    console.log('🚨 Emergency: Forcing main menu...');
+    document.querySelectorAll('.screen').forEach(screen => {
+        screen.classList.remove('active');
+    });
+    document.getElementById('mainMenu').classList.add('active');
+    
+    // Reset game state
+    if (game) {
+        game.gameStarted = false;
+        if (game.gameLoop) {
+            cancelAnimationFrame(game.gameLoop);
+        }
+        game.currentScreen = 'mainMenu';
+    }
+    console.log('✅ Emergency main menu activated');
 }
 
 function saveSettings() {
@@ -624,19 +651,31 @@ function saveSettings() {
 
 // Initialize settings UI
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('🎮 DOM loaded, forcing main menu...');
+    
+    // Force main menu to be active
+    document.querySelectorAll('.screen').forEach(screen => {
+        screen.classList.remove('active');
+    });
+    document.getElementById('mainMenu').classList.add('active');
+    
     // Update sensitivity display
     const sensitivitySlider = document.getElementById('sensitivity');
     const sensitivityValue = document.getElementById('sensitivityValue');
-    sensitivitySlider.addEventListener('input', () => {
-        sensitivityValue.textContent = sensitivitySlider.value;
-    });
+    if (sensitivitySlider && sensitivityValue) {
+        sensitivitySlider.addEventListener('input', () => {
+            sensitivityValue.textContent = sensitivitySlider.value;
+        });
+    }
     
     // Update volume display
     const volumeSlider = document.getElementById('masterVolume');
     const volumeValue = document.getElementById('volumeValue');
-    volumeSlider.addEventListener('input', () => {
-        volumeValue.textContent = volumeSlider.value;
-    });
+    if (volumeSlider && volumeValue) {
+        volumeSlider.addEventListener('input', () => {
+            volumeValue.textContent = volumeSlider.value;
+        });
+    }
     
     // Handle window resize
     window.addEventListener('resize', () => {
@@ -645,6 +684,8 @@ document.addEventListener('DOMContentLoaded', () => {
             game.canvas.height = window.innerHeight;
         }
     });
+    
+    console.log('✅ Main menu forced, ready to play!');
 });
 
 // Prevent context menu on right click

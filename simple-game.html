@@ -529,6 +529,12 @@
         document.addEventListener('gestureend', e => e.preventDefault());
         
         console.log('🎮 Game loaded and ready!');
+        
+        // Force main menu on load
+        setTimeout(() => {
+            console.log('🔄 Ensuring main menu is active...');
+            switchScreen('mainMenu');
+        }, 100);
     </script>
 </body>
 </html>

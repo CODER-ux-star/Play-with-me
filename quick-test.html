@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Test - Screen Check</title>
+    <style>
+        body {
+            background: #000;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        
+        .screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: none;
+            padding: 50px;
+            text-align: center;
+        }
+        
+        .screen.active {
+            display: block;
+        }
+        
+        #mainMenu {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        #statsScreen {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        }
+        
+        button {
+            background: #ff4757;
+            border: none;
+            color: white;
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        
+        .status {
+            background: #333;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="status">
+        <h2>🧪 Screen Debug Test</h2>
+        <div id="currentStatus">Loading...</div>
+        <button onclick="forceMainMenu()">🏠 FORCE MAIN MENU</button>
+        <button onclick="checkScreens()">🔍 CHECK SCREENS</button>
+    </div>
+
+    <!-- Main Menu Screen -->
+    <div id="mainMenu" class="screen active">
+        <h1>🎮 MAIN MENU</h1>
+        <h2>This is the correct screen!</h2>
+        <button onclick="showStats()">📊 STATISTICS</button>
+        <button onclick="testGame()">🎮 TEST GAME</button>
+        <p>If you see this, main menu is working!</p>
+    </div>
+
+    <!-- Statistics Screen -->
+    <div id="statsScreen" class="screen">
+        <h1>📊 PLAYER STATISTICS</h1>
+        <h2>This is the stats screen (you shouldn't see this on load)</h2>
+        <button onclick="backToMenu()">⬅️ BACK TO MENU</button>
+        <div style="margin: 20px;">
+            <div>Matches Played: 127</div>
+            <div>Wins: 23</div>
+            <div>Win Rate: 18.1%</div>
+        </div>
+    </div>
+
+    <script>
+        let currentScreen = 'mainMenu';
+        
+        function updateStatus() {
+            const mainVisible = document.getElementById('mainMenu').classList.contains('active');
+            const statsVisible = document.getElementById('statsScreen').classList.contains('active');
+            
+            let status = `
+                🎮 Main Menu Active: ${mainVisible ? '✅' : '❌'}
+                📊 Stats Screen Active: ${statsVisible ? '✅' : '❌'}
+                📍 Current Screen: ${currentScreen}
+                ⏰ Time: ${new Date().toLocaleTimeString()}
+            `;
+            
+            document.getElementById('currentStatus').innerHTML = status.replace(/\n/g, '<br>');
+            
+            console.log('Screen Status:', {
+                mainVisible,
+                statsVisible,
+                currentScreen
+            });
+        }
+        
+        function switchScreen(screenId) {
+            console.log('🔄 Switching to:', screenId);
+            
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            
+            document.getElementById(screenId).classList.add('active');
+            currentScreen = screenId;
+            updateStatus();
+        }
+        
+        function forceMainMenu() {
+            console.log('🚨 FORCE MAIN MENU');
+            switchScreen('mainMenu');
+        }
+        
+        function showStats() {
+            console.log('📊 Showing stats');
+            switchScreen('statsScreen');
+        }
+        
+        function backToMenu() {
+            console.log('🏠 Back to menu');
+            switchScreen('mainMenu');
+        }
+        
+        function testGame() {
+            alert('🎮 Game test - this would start the game');
+        }
+        
+        function checkScreens() {
+            console.log('🔍 Checking all screens...');
+            document.querySelectorAll('.screen').forEach((screen, index) => {
+                console.log(`Screen ${index}: ${screen.id}, Active: ${screen.classList.contains('active')}`);
+            });
+            updateStatus();
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 DOM loaded');
+            setTimeout(() => {
+                console.log('🔄 Forcing main menu after load...');
+                forceMainMenu();
+                setInterval(updateStatus, 1000);
+            }, 100);
+        });
+        
+        // Auto-update status
+        updateStatus();
+    </script>
+</body>
+</html>

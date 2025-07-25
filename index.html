@@ -207,6 +207,31 @@
         </div>
     </div>
 
+    <!-- Emergency Button (hidden by default) -->
+    <div id="emergencyButton" style="position: fixed; top: 10px; left: 10px; z-index: 9999; display: none;">
+        <button onclick="forceMainMenu()" style="background: red; color: white; border: none; padding: 10px; border-radius: 5px; font-weight: bold; cursor: pointer;">
+            🏠 MAIN MENU
+        </button>
+    </div>
+
     <script src="game.js"></script>
+    
+    <script>
+        // Show emergency button after 3 seconds
+        setTimeout(() => {
+            document.getElementById('emergencyButton').style.display = 'block';
+        }, 3000);
+        
+        // Auto-hide emergency button if on main menu
+        setInterval(() => {
+            const mainMenuActive = document.getElementById('mainMenu').classList.contains('active');
+            const emergencyBtn = document.getElementById('emergencyButton');
+            if (mainMenuActive) {
+                emergencyBtn.style.display = 'none';
+            } else {
+                emergencyBtn.style.display = 'block';
+            }
+        }, 1000);
+    </script>
 </body>
 </html>
