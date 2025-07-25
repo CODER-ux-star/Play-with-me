@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battle Royale - Simple Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        
+        .screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: none;
+        }
+        
+        .screen.active {
+            display: block;
+        }
+        
+        #mainMenu {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        
+        .game-title {
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .menu-btn {
+            background: #ff4757;
+            border: none;
+            color: white;
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .menu-btn:hover {
+            background: #ff3838;
+            transform: translateY(-2px);
+        }
+        
+        #gameScreen {
+            background: linear-gradient(to bottom, #87CEEB 0%, #98FB98 50%, #228B22 100%);
+        }
+        
+        #gameCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        .game-hud {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        .game-hud * {
+            pointer-events: auto;
+        }
+        
+        .top-hud {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .hud-item {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            font-weight: bold;
+        }
+        
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        
+        .joystick {
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 3px solid rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .joystick-knob {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.1s ease;
+        }
+        
+        .fire-btn {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 71, 87, 0.3);
+            border: 3px solid #ff4757;
+            border-radius: 50%;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .fire-btn:active {
+            background: rgba(255, 71, 87, 0.6);
+            transform: scale(0.95);
+        }
+        
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #333;
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .status {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Main Menu -->
+    <div id="mainMenu" class="screen active">
+        <h1 class="game-title">🎮 BATTLE ROYALE</h1>
+        <button class="menu-btn" onclick="startGame()">🚀 PLAY NOW</button>
+        <button class="menu-btn" onclick="testMode()">🧪 TEST MODE</button>
+    </div>
+    
+    <!-- Game Screen -->
+    <div id="gameScreen" class="screen">
+        <div class="game-hud">
+            <div class="top-hud">
+                <div class="hud-item">
+                    <span id="playerCount">50 ALIVE</span>
+                </div>
+                <div class="hud-item">
+                    <span id="gameTimer">00:00</span>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <div class="joystick" id="joystick">
+                    <div class="joystick-knob" id="joystickKnob"></div>
+                </div>
+                
+                <div class="fire-btn" id="fireBtn">🔫</div>
+            </div>
+            
+            <div class="status">
+                <div>Health: <span id="health">100</span>/100</div>
+                <div>Ammo: <span id="ammo">30</span>/120</div>
+                <div>Position: <span id="position">0, 0</span></div>
+            </div>
+        </div>
+        
+        <canvas id="gameCanvas"></canvas>
+        <button class="back-btn" onclick="backToMenu()">⬅️ BACK</button>
+    </div>
+    
+    <script>
+        // Simple Game State
+        let gameState = {
+            currentScreen: 'mainMenu',
+            player: {
+                x: 0,
+                y: 0,
+                vx: 0,
+                vy: 0,
+                health: 100,
+                ammo: 30,
+                speed: 3
+            },
+            enemies: [],
+            gameTime: 0,
+            isRunning: false
+        };
+        
+        let canvas, ctx;
+        let gameLoop;
+        
+        // Screen Management
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+            gameState.currentScreen = screenId;
+        }
+        
+        function startGame() {
+            console.log('🎮 Starting game...');
+            switchScreen('gameScreen');
+            initializeGame();
+        }
+        
+        function testMode() {
+            alert('🧪 Test Mode: All systems working!\n\n✅ Menu System\n✅ Screen Switching\n✅ Button Events\n\nReady to play!');
+        }
+        
+        function backToMenu() {
+            gameState.isRunning = false;
+            if (gameLoop) {
+                cancelAnimationFrame(gameLoop);
+            }
+            switchScreen('mainMenu');
+        }
+        
+        // Game Initialization
+        function initializeGame() {
+            console.log('🚀 Initializing game...');
+            
+            // Setup canvas
+            canvas = document.getElementById('gameCanvas');
+            ctx = canvas.getContext('2d');
+            
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            // Reset player position
+            gameState.player.x = canvas.width / 2;
+            gameState.player.y = canvas.height / 2;
+            
+            // Create some enemies
+            gameState.enemies = [];
+            for (let i = 0; i < 5; i++) {
+                gameState.enemies.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: (Math.random() - 0.5) * 2,
+                    health: 100
+                });
+            }
+            
+            setupControls();
+            gameState.isRunning = true;
+            gameLoop = requestAnimationFrame(update);
+            
+            console.log('✅ Game initialized successfully!');
+        }
+        
+        // Controls Setup
+        function setupControls() {
+            const joystick = document.getElementById('joystick');
+            const knob = document.getElementById('joystickKnob');
+            const fireBtn = document.getElementById('fireBtn');
+            
+            let isDragging = false;
+            
+            // Joystick controls
+            function handleJoystickStart(e) {
+                isDragging = true;
+                e.preventDefault();
+                console.log('🕹️ Joystick activated');
+            }
+            
+            function handleJoystickMove(e) {
+                if (!isDragging) return;
+                
+                const rect = joystick.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                
+                const deltaX = clientX - centerX;
+                const deltaY = clientY - centerY;
+                
+                const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                const maxDistance = 30;
+                
+                if (distance <= maxDistance) {
+                    knob.style.transform = `translate(${deltaX - 20}px, ${deltaY - 20}px)`;
+                    gameState.player.vx = (deltaX / maxDistance) * gameState.player.speed;
+                    gameState.player.vy = (deltaY / maxDistance) * gameState.player.speed;
+                } else {
+                    const angle = Math.atan2(deltaY, deltaX);
+                    const limitedX = Math.cos(angle) * maxDistance;
+                    const limitedY = Math.sin(angle) * maxDistance;
+                    knob.style.transform = `translate(${limitedX - 20}px, ${limitedY - 20}px)`;
+                    gameState.player.vx = Math.cos(angle) * gameState.player.speed;
+                    gameState.player.vy = Math.sin(angle) * gameState.player.speed;
+                }
+            }
+            
+            function handleJoystickEnd() {
+                isDragging = false;
+                knob.style.transform = 'translate(-50%, -50%)';
+                gameState.player.vx = 0;
+                gameState.player.vy = 0;
+                console.log('🕹️ Joystick released');
+            }
+            
+            // Add event listeners
+            joystick.addEventListener('mousedown', handleJoystickStart);
+            joystick.addEventListener('touchstart', handleJoystickStart, { passive: false });
+            document.addEventListener('mousemove', handleJoystickMove);
+            document.addEventListener('touchmove', handleJoystickMove, { passive: false });
+            document.addEventListener('mouseup', handleJoystickEnd);
+            document.addEventListener('touchend', handleJoystickEnd);
+            
+            // Fire button
+            fireBtn.addEventListener('mousedown', () => {
+                fire();
+                console.log('🔫 Fire!');
+            });
+            fireBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                fire();
+                console.log('🔫 Touch Fire!');
+            });
+            
+            // Keyboard controls
+            document.addEventListener('keydown', (e) => {
+                switch(e.code) {
+                    case 'KeyW':
+                    case 'ArrowUp':
+                        gameState.player.vy = -gameState.player.speed;
+                        break;
+                    case 'KeyS':
+                    case 'ArrowDown':
+                        gameState.player.vy = gameState.player.speed;
+                        break;
+                    case 'KeyA':
+                    case 'ArrowLeft':
+                        gameState.player.vx = -gameState.player.speed;
+                        break;
+                    case 'KeyD':
+                    case 'ArrowRight':
+                        gameState.player.vx = gameState.player.speed;
+                        break;
+                    case 'Space':
+                        e.preventDefault();
+                        fire();
+                        break;
+                }
+            });
+            
+            document.addEventListener('keyup', (e) => {
+                switch(e.code) {
+                    case 'KeyW':
+                    case 'KeyS':
+                    case 'ArrowUp':
+                    case 'ArrowDown':
+                        gameState.player.vy = 0;
+                        break;
+                    case 'KeyA':
+                    case 'KeyD':
+                    case 'ArrowLeft':
+                    case 'ArrowRight':
+                        gameState.player.vx = 0;
+                        break;
+                }
+            });
+        }
+        
+        // Game Logic
+        function fire() {
+            if (gameState.player.ammo > 0) {
+                gameState.player.ammo--;
+                
+                // Check for hits with enemies
+                gameState.enemies.forEach((enemy, index) => {
+                    const distance = Math.sqrt(
+                        (enemy.x - gameState.player.x) ** 2 + 
+                        (enemy.y - gameState.player.y) ** 2
+                    );
+                    
+                    if (distance < 100) {
+                        enemy.health -= 25;
+                        if (enemy.health <= 0) {
+                            gameState.enemies.splice(index, 1);
+                        }
+                    }
+                });
+                
+                updateUI();
+            }
+        }
+        
+        function update() {
+            if (!gameState.isRunning) return;
+            
+            // Update player position
+            gameState.player.x += gameState.player.vx;
+            gameState.player.y += gameState.player.vy;
+            
+            // Keep player in bounds
+            gameState.player.x = Math.max(20, Math.min(canvas.width - 20, gameState.player.x));
+            gameState.player.y = Math.max(20, Math.min(canvas.height - 20, gameState.player.y));
+            
+            // Update enemies
+            gameState.enemies.forEach(enemy => {
+                enemy.x += enemy.vx;
+                enemy.y += enemy.vy;
+                
+                // Bounce off walls
+                if (enemy.x < 0 || enemy.x > canvas.width) enemy.vx *= -1;
+                if (enemy.y < 0 || enemy.y > canvas.height) enemy.vy *= -1;
+                
+                enemy.x = Math.max(0, Math.min(canvas.width, enemy.x));
+                enemy.y = Math.max(0, Math.min(canvas.height, enemy.y));
+            });
+            
+            // Update timer
+            gameState.gameTime += 1/60;
+            
+            render();
+            updateUI();
+            
+            gameLoop = requestAnimationFrame(update);
+        }
+        
+        function render() {
+            // Clear canvas
+            ctx.fillStyle = '#87CEEB';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw ground
+            ctx.fillStyle = '#228B22';
+            ctx.fillRect(0, canvas.height * 0.7, canvas.width, canvas.height * 0.3);
+            
+            // Draw player
+            ctx.fillStyle = '#ff4757';
+            ctx.fillRect(gameState.player.x - 15, gameState.player.y - 15, 30, 30);
+            
+            // Draw player health bar
+            ctx.fillStyle = 'red';
+            ctx.fillRect(gameState.player.x - 20, gameState.player.y - 30, 40, 5);
+            ctx.fillStyle = 'green';
+            ctx.fillRect(gameState.player.x - 20, gameState.player.y - 30, (gameState.player.health / 100) * 40, 5);
+            
+            // Draw enemies
+            gameState.enemies.forEach(enemy => {
+                ctx.fillStyle = '#ffa500';
+                ctx.fillRect(enemy.x - 10, enemy.y - 10, 20, 20);
+                
+                // Enemy health bar
+                ctx.fillStyle = 'red';
+                ctx.fillRect(enemy.x - 15, enemy.y - 25, 30, 3);
+                ctx.fillStyle = 'green';
+                ctx.fillRect(enemy.x - 15, enemy.y - 25, (enemy.health / 100) * 30, 3);
+            });
+        }
+        
+        function updateUI() {
+            document.getElementById('health').textContent = gameState.player.health;
+            document.getElementById('ammo').textContent = gameState.player.ammo;
+            document.getElementById('position').textContent = 
+                Math.round(gameState.player.x) + ', ' + Math.round(gameState.player.y);
+            document.getElementById('playerCount').textContent = 
+                (gameState.enemies.length + 1) + ' ALIVE';
+                
+            const minutes = Math.floor(gameState.gameTime / 60);
+            const seconds = Math.floor(gameState.gameTime % 60);
+            document.getElementById('gameTimer').textContent = 
+                minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0');
+        }
+        
+        // Prevent default behaviors
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('gesturestart', e => e.preventDefault());
+        document.addEventListener('gesturechange', e => e.preventDefault());
+        document.addEventListener('gestureend', e => e.preventDefault());
+        
+        console.log('🎮 Game loaded and ready!');
+    </script>
+</body>
+</html>

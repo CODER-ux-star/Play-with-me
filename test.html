@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #000;
+            color: #fff;
+            font-family: Arial, sans-serif;
+        }
+        
+        #status {
+            background: #333;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        
+        button {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        #gameCanvas {
+            border: 2px solid #fff;
+            background: #87CEEB;
+        }
+    </style>
+</head>
+<body>
+    <div id="status">
+        <h3>Game Debug Status</h3>
+        <div id="statusText">Loading...</div>
+    </div>
+    
+    <button onclick="testGame()">Test Game</button>
+    <button onclick="testCanvas()">Test Canvas</button>
+    <button onclick="testControls()">Test Controls</button>
+    
+    <br><br>
+    
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    
+    <script>
+        const status = document.getElementById('statusText');
+        
+        function log(message) {
+            console.log(message);
+            status.innerHTML += '<br>' + message;
+        }
+        
+        function testGame() {
+            log('Testing game files...');
+            
+            // Check if main game files exist
+            fetch('index.html')
+                .then(response => {
+                    if (response.ok) {
+                        log('✅ index.html found');
+                    } else {
+                        log('❌ index.html not found');
+                    }
+                })
+                .catch(err => log('❌ Error loading index.html: ' + err));
+                
+            fetch('game.js')
+                .then(response => {
+                    if (response.ok) {
+                        log('✅ game.js found');
+                    } else {
+                        log('❌ game.js not found');
+                    }
+                })
+                .catch(err => log('❌ Error loading game.js: ' + err));
+                
+            fetch('styles.css')
+                .then(response => {
+                    if (response.ok) {
+                        log('✅ styles.css found');
+                    } else {
+                        log('❌ styles.css not found');
+                    }
+                })
+                .catch(err => log('❌ Error loading styles.css: ' + err));
+        }
+        
+        function testCanvas() {
+            log('Testing canvas...');
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            if (ctx) {
+                log('✅ Canvas context available');
+                
+                // Draw test rectangle
+                ctx.fillStyle = '#ff4757';
+                ctx.fillRect(10, 10, 50, 50);
+                
+                // Draw test circle
+                ctx.fillStyle = '#00ff00';
+                ctx.beginPath();
+                ctx.arc(100, 50, 25, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                log('✅ Test drawing complete');
+            } else {
+                log('❌ Canvas context not available');
+            }
+        }
+        
+        function testControls() {
+            log('Testing controls...');
+            
+            // Test keyboard events
+            document.addEventListener('keydown', (e) => {
+                log('Key pressed: ' + e.code);
+            });
+            
+            // Test mouse events
+            document.addEventListener('click', (e) => {
+                log('Mouse clicked at: ' + e.clientX + ', ' + e.clientY);
+            });
+            
+            log('✅ Event listeners added');
+        }
+        
+        // Auto-run basic tests
+        document.addEventListener('DOMContentLoaded', () => {
+            log('DOM loaded');
+            testGame();
+            testCanvas();
+        });
+    </script>
+</body>
+</html>

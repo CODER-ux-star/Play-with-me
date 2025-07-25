@@ -42,6 +42,11 @@ class GameState {
 
     setupCanvas() {
         const canvas = document.getElementById('gameCanvas');
+        if (!canvas) {
+            console.error('Game canvas not found!');
+            return;
+        }
+        
         const ctx = canvas.getContext('2d');
         
         canvas.width = window.innerWidth;
@@ -50,9 +55,16 @@ class GameState {
         this.canvas = canvas;
         this.ctx = ctx;
         
+        console.log('Canvas setup complete:', canvas.width, 'x', canvas.height);
+        
         // Setup minimap
         const minimapCanvas = document.getElementById('minimapCanvas');
-        this.minimapCtx = minimapCanvas.getContext('2d');
+        if (minimapCanvas) {
+            this.minimapCtx = minimapCanvas.getContext('2d');
+            console.log('Minimap setup complete');
+        } else {
+            console.error('Minimap canvas not found!');
+        }
     }
 
     setupControls() {
@@ -65,12 +77,18 @@ class GameState {
         const joystick = document.getElementById('movementJoystick');
         const knob = joystick.querySelector('.joystick-knob');
         
+        if (!joystick || !knob) {
+            console.error('Joystick elements not found!');
+            return;
+        }
+        
         let isDragging = false;
         let joystickCenter = { x: 60, y: 60 };
         
         const handleStart = (e) => {
             isDragging = true;
             e.preventDefault();
+            console.log('Joystick drag started');
         };
         
         const handleMove = (e) => {
@@ -102,12 +120,13 @@ class GameState {
             isDragging = false;
             knob.style.transform = 'translate(-50%, -50%)';
             this.player.setMovement(0, 0);
+            console.log('Joystick drag ended');
         };
         
         joystick.addEventListener('mousedown', handleStart);
-        joystick.addEventListener('touchstart', handleStart);
+        joystick.addEventListener('touchstart', handleStart, { passive: false });
         document.addEventListener('mousemove', handleMove);
-        document.addEventListener('touchmove', handleMove);
+        document.addEventListener('touchmove', handleMove, { passive: false });
         document.addEventListener('mouseup', handleEnd);
         document.addEventListener('touchend', handleEnd);
     }
@@ -484,6 +503,11 @@ class Player {
     }
 
     render(ctx) {
+        if (!ctx) {
+            console.error('No canvas context for player rendering');
+            return;
+        }
+        
         // Draw player as a simple character
         ctx.fillStyle = '#ff4757';
         ctx.fillRect(this.x - 10, this.y - 10, 20, 20);
@@ -553,10 +577,13 @@ let game;
 
 // UI Functions
 function startGame() {
+    console.log('Starting game...');
     if (!game) {
         game = new GameState();
+        console.log('Game state created');
     }
     game.startGame();
+    console.log('Game started');
 }
 
 function showSettings() {
